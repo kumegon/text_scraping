@@ -4,6 +4,13 @@ import re
 import unicodedata
 import csv
 
+'''
+出力ファイルは
+age_from,age_to,gender,relation,original_text
+gender = {1:male, 2:female, -1:unknown}
+relation = {1:自分, 2:配偶者, 3:子, 4:親, 5:祖父母, 6:孫, 7:義父母, 8:恋人, 9:知人・友人}
+'''
+
 f = open("person.txt")
 lines = f.readlines()
 f.close()
@@ -110,29 +117,52 @@ def which_rel(line):
       return i
   return 1
 
+def get_grade(str):
+  number = u'[1-6]'
+  number2 = u'[１-６一二三四五六]'
+  if re.findall(number, str):
+    return str2int(re.findall(number, str)[0]) - 1
+  elif re.findall(number2, str):
+    return str2int(re.findall(number2, str)[0]) - 1
+  else:
+    return -1
+
+def get_range_grade(str):
+  low = u'低'
+  middle = u'中'
+  high = u'高'
+  if re.findall(low, str):
+    return 2
+  elif re.findall(middle, str):
+    return 4
+  elif re.findall(high, str):
+    return 6
+  else:
+    return 0
+
+
 def get_number(str):
-  return str.split('代')[0].split('歳')[0].split('才')[0]
+  return str.split(u'代')[0].split(u'歳')[0].split(u'才')[0]
 
 def range_age(line):
-  number = r'[0-9０-９一二三四五六七八九十]+'
-  age1 = r'[0-9]+[歳才]{0,3}代'
-  age2 = r'[０-９]{3,6}[歳才]{0,3}代'
-  age3 = r'[一二三四五六七八九十〇]{6}[歳才]{0,3}代'
-  age4 = r'十[歳才]{3}'
-  age5 = r'[0-9]+[歳才]{3}'
-  age6 = r'[０-９]{3,6}[歳才]{3}'
-  age7 = r'[一二三四五六七八九十〇]{6}[歳才]{3}'
-  age8 = r'十[歳才]{3}'
+  age1 = u'[0-9]+[歳才]?代'
+  age2 = u'[０-９]+[歳才]?代'
+  age3 = u'[一二三四五六七八九十〇]+[歳才]?代'
+  age4 = u'十[歳才]?'
+  age5 = u'[0-9]+[歳才]'
+  age6 = u'[０-９]+[歳才]'
+  age7 = u'[一二三四五六七八九十〇]+[歳才]'
+  age8 = u'十[歳才]'
   age_from = 0
   age_to = 0
   if re.findall(age1, line):
     age_from = str2int(get_number(re.findall(age1,line)[0]))
     age_to = age_from + 9
   elif re.findall(age2, line):
-    age_from = str2int(get_number(re.findall(age2,line)[0]).decode('utf-8'))
+    age_from = str2int(get_number(re.findall(age2,line)[0]))
     age_to = age_from + 9
   elif re.findall(age3, line):
-    age_from = str2int(get_number(re.findall(age3,line)[0]).decode('utf-8'))
+    age_from = str2int(get_number(re.findall(age3,line)[0]))
     age_to = age_from + 9
   elif re.findall(age4, line):
     age_from = 10
@@ -141,27 +171,46 @@ def range_age(line):
     age_from = str2int(get_number(re.findall(age5,line)[0]))
     age_to = age_from
   elif re.findall(age6, line):
-    age_from = str2int(get_number(re.findall(age6,line)[0]).decode('utf-8'))
+    age_from = str2int(get_number(re.findall(age6,line)[0]))
     age_to = age_from
   elif re.findall(age7, line):
-    age_from = str2int(get_number(re.findall(age7,line)[0]).decode('utf-8'))
+    age_from = str2int(get_number(re.findall(age7,line)[0]))
     age_to = age_from
   elif re.findall(age8, line):
     age_from = 10
     age_to = age_from
-  elif re.findall('高',line):
+  elif re.findall(u'高',line):
     age_from = 16
-    age_to = 18
-  elif re.findall('中',line):
+    grade = get_grade(line)
+    if grade >= 0:
+      age_to = age_from + grade
+      age_from = age_to
+    else:
+      age_to = 18
+  elif re.findall(u'中',line):
     age_from = 13
-    age_to = 15
-  elif re.findall('小',line):
-    age_from = 6
-    age_to = 12
-  elif re.findall('幼稚園|保育園',line):
+    grade = get_grade(line)
+    if grade >= 0:
+      age_to = age_from + grade
+      age_from = age_to
+    else:
+      age_to = 15
+  elif re.findall(u'小',line):
+    age_from = 7
+    grade = get_grade(line)
+    range_grade = get_range_grade(line)
+    if grade >= 0:
+      age_to = age_from + grade
+      age_from = age_to
+    elif range_grade > 0:
+      age_to = age_from + range_grade
+      age_from = age_to - 2
+    else:
+      age_to = 12
+  elif re.findall(u'幼稚園|保育園',line):
     age_from = 3
-    age_to = 5
-  elif re.findall('月',line):
+    age_to = 6
+  elif re.findall(u'月',line):
     age_from = 0
     age_to = 1
   else:
@@ -172,10 +221,10 @@ def range_age(line):
 
 g = open('person.csv','wb')
 writer = csv.writer(g, lineterminator='', quoting=csv.QUOTE_NONE)
-for line in lines:
+for line in map(lambda x: x.decode("utf-8"),lines):
   age = range_age(line)
   gender = which_gender(line)
   rel = which_rel(line)
-  tup = [age[0],age[1],gender,rel,line]
+  tup = [age[0],age[1],gender,rel,line.encode('utf-8')]
   writer.writerow(tup)
 g.close()
