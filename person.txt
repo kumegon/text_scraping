@@ -1,9 +1,3 @@
-age_from:number
-age_to:number
-relation:{1:self,2:masther,3:father,4:,,,,,,-1:unknown}
-gender:{1:male,2:female,-1:unknown}
-original_text:{}
-
 40代半ばの女性
 女性
 生後２か月の娘
