@@ -80,7 +80,7 @@ def str2int(s
             ketaage = 1                     #    漢数字0～9連続時の桁上げをクリア
             p = 'k'                         #    次の処理の為一つ前が万以上の位文字だったと記録
         else:                               #  それ以外は
-            print i, u':数字外の文字'         #    取り敢えず、画面表示してpassしておく …(2)
+            return -1        #    取り敢えず、画面表示してpassしておく …(2)
     if p=='z' or p=='k':                    #最後の未処理分は
         n += k3 * k4                        #  頭の一が省略されたものと看做し処理     …(1)
     return n                                #結果を返す
@@ -113,28 +113,64 @@ def which_rel(line):
   if flag:
     print(1)
 
+def get_number(str):
+  return str.split('代')[0].split('歳')[0].split('才')[0]
+
 def range_age(line):
-  char2dec = {'二十':20,}
   number = r'[0-9０-９一二三四五六七八九十]+'
-  age1 = r'[0-9]+[歳]*代'
-  age2 = r'[０-９]{3,6}[歳]*代'
-  age3 = r'[一二三四五六七八九十〇]{6}[歳]*代'
-  age4 = r'十[歳]*代'
+  age1 = r'[0-9]+[歳才]{0,3}代'
+  age2 = r'[０-９]{3,6}[歳才]{0,3}代'
+  age3 = r'[一二三四五六七八九十〇]{6}[歳才]{0,3}代'
+  age4 = r'十[歳才]{3}'
+  age5 = r'[0-9]+[歳才]{3}'
+  age6 = r'[０-９]{3,6}[歳才]{3}'
+  age7 = r'[一二三四五六七八九十〇]{6}[歳才]{3}'
+  age8 = r'十[歳才]{3}'
+  age_from = 0
+  age_to = 0
   if re.findall(age1, line):
-    age_from = str2int(re.findall(age1,line)[0].split('代')[0].split('歳')[0])
+    age_from = str2int(get_number(re.findall(age1,line)[0]))
     age_to = age_from + 9
-    print(str(age_from) + ', ' + str(age_to))
   elif re.findall(age2, line):
-    age_from = str2int(re.findall(age2,line)[0].split('代')[0].split('歳')[0].decode('utf-8'))
+    age_from = str2int(get_number(re.findall(age2,line)[0]).decode('utf-8'))
     age_to = age_from + 9
-    print(str(age_from) + ', ' + str(age_to))
   elif re.findall(age3, line):
-    age_from = str2int(re.findall(age3,line)[0].split('代')[0].split('歳')[0].decode('utf-8'))
+    age_from = str2int(get_number(re.findall(age3,line)[0]).decode('utf-8'))
     age_to = age_from + 9
-    print(str(age_from) + ', ' + str(age_to))
   elif re.findall(age4, line):
-    age_from = 9
+    age_from = 10
     age_to = age_from + 9
+  elif re.findall(age5, line):
+    age_from = str2int(get_number(re.findall(age5,line)[0]))
+    age_to = age_from
+  elif re.findall(age6, line):
+    age_from = str2int(get_number(re.findall(age6,line)[0]).decode('utf-8'))
+    age_to = age_from
+  elif re.findall(age7, line):
+    age_from = str2int(get_number(re.findall(age7,line)[0]).decode('utf-8'))
+    age_to = age_from
+  elif re.findall(age8, line):
+    age_from = 10
+    age_to = age_from
+  elif re.findall('高',line):
+    age_from = 16
+    age_to = 18
+  elif re.findall('中',line):
+    age_from = 13
+    age_to = 15
+  elif re.findall('小',line):
+    age_from = 6
+    age_to = 12
+  elif re.findall('幼稚園|保育園',line):
+    age_from = 3
+    age_to = 5
+  elif re.findall('月',line):
+    age_from = 0
+    age_to = 1
+  else:
+    age_from = -1
+    age_to = -1
+  if(age_from >= 0):
     print(str(age_from) + ', ' + str(age_to))
 for line in lines:
   range_age(line)
