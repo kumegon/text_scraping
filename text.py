@@ -7,6 +7,7 @@ import csv
 '''
 出力ファイルは
 age_from,age_to,gender,relation,original_text
+成人の場合はage_from=20,age_to=-1
 gender = {1:male, 2:female, -1:unknown}
 relation = {1:自分, 2:配偶者, 3:子, 4:親, 5:祖父母, 6:孫, 7:義父母, 8:恋人, 9:知人・友人}
 '''
@@ -143,32 +144,25 @@ def get_number(str):
   return str.split(u'代')[0].split(u'歳')[0].split(u'才')[0]
 
 def range_age(line):
-  age1 = u'[0-9０-９一二三四五六七八九十〇]+[歳才]?代'
-  age2 = u'[0-9０-９一二三四五六七八九十〇]+[歳才]'
-  age_from = 0
-  age_to = 0
-  if re.findall(age1, line):
-    age_from = str2int(get_number(re.findall(age1,line)[0]))
+  if re.findall(u'[0-9０-９一二三四五六七八九十〇]+[歳才]?代', line):
+    age_from = str2int(get_number(re.findall(u'[0-9０-９一二三四五六七八九十〇]+[歳才]?代',line)[0]))
     former = u'前'
     latter = u'後'
     middle = u'半'
     if re.findall(former, line):
-      print('前')
       age_to = age_from + 4
     elif re.findall(latter, line):
-      print('後')
       age_from += 5
       age_to = age_from + 4
     elif re.findall(middle, line):
-      print('半')
       age_from += 3
       age_to = age_from + 5
     else:
       age_to = age_from + 9
-  elif re.findall(age2, line):
-    age_from = str2int(get_number(re.findall(age2,line)[0]))
+  elif re.findall(u'[0-9０-９一二三四五六七八九十〇]+[歳才]', line):
+    age_from = str2int(get_number(re.findall(u'[0-9０-９一二三四五六七八九十〇]+[歳才]',line)[0]))
     age_to = age_from
-  elif re.findall(u'高',line):
+  elif re.findall(u'高[校]?[1-3１-３一二三]?',line):
     age_from = 16
     grade = get_grade(line)
     if grade >= 0:
@@ -176,7 +170,7 @@ def range_age(line):
       age_from = age_to
     else:
       age_to = 18
-  elif re.findall(u'中',line):
+  elif re.findall(u'中[学]?[1-3１-３一二三]?',line):
     age_from = 13
     grade = get_grade(line)
     if grade >= 0:
@@ -184,7 +178,7 @@ def range_age(line):
       age_from = age_to
     else:
       age_to = 15
-  elif re.findall(u'小',line):
+  elif re.findall(u'小[学]?[1-6１-６一二三四五六]?',line):
     age_from = 7
     grade = get_grade(line)
     range_grade = get_range_grade(line)
@@ -199,10 +193,10 @@ def range_age(line):
   elif re.findall(u'幼稚園|保育園',line):
     age_from = 3
     age_to = 6
-  elif re.findall(u'月',line):
+  elif re.findall(u'[かヶ]?月',line):
     age_from = 0
     age_to = 1
-  elif re.findall(u'年[生]?', line):
+  elif re.findall(u'[1-6１-６一二三四五六]年[生]?', line):
     if(re.findall(u'[1-6１-６一二三四五六]', line)):
       grade = str2int(re.findall(u'[1-6１-６一二三四五六]', line)[0])
       age_from = 6 + grade
@@ -210,6 +204,21 @@ def range_age(line):
     else:
       age_from = -1
       age_to = -1
+  elif re.findall(u'少[年女]', line):
+    age_from = 6
+    age_to = 18
+  elif re.findall(u'青年', line):
+    age_from = 16
+    age_to = 34
+  elif re.findall(u'中年', line):
+    age_from = 35
+    age_to = 55
+  elif re.findall(u'老年', line):
+    age_from = 56
+    age_to = 69
+  elif re.findall(u'高齢', line):
+    age_from = 70
+    age_to = 100
   elif re.findall(u'成人', line):
     age_from = 20
     age_to = -1
