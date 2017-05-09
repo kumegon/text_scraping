@@ -2,6 +2,7 @@
 # coding: UTF-8
 import re
 import unicodedata
+import csv
 
 f = open("person.txt")
 lines = f.readlines()
@@ -96,22 +97,18 @@ def which_gender(line):
   female = r'母|娘|女|妻'
   male = r'父|息子|男|夫|主人'
   if re.findall(female, line):
-    print(2)
+    return 2
   elif re.findall(male, line):
-    print(1)
+    return 1
   else:
-    print(-1)
+    return -1
 
 def which_rel(line):
-  rel = {2:"妻|主人|夫", 3:"子|娘", 4:"父|母", 5:"祖", 6:"孫", 7:"義", 8:"恋|彼", 9:"知人|友"}
-  flag = True
+  rel = {1:"自分", 2:"妻|主人|夫", 3:"子|娘", 4:"父|母", 5:"祖", 6:"孫", 7:"義", 8:"恋|彼", 9:"知人|友"}
   for i in range(2,10):
     if re.findall(rel[i], line):
-      print(i)
-      flag = False
-      break
-  if flag:
-    print(1)
+      return i
+  return 1
 
 def get_number(str):
   return str.split('代')[0].split('歳')[0].split('才')[0]
@@ -170,7 +167,15 @@ def range_age(line):
   else:
     age_from = -1
     age_to = -1
-  if(age_from >= 0):
-    print(str(age_from) + ', ' + str(age_to))
+  return [age_from, age_to]
+
+
+g = open('person.csv','wb')
+writer = csv.writer(g, lineterminator='', quoting=csv.QUOTE_NONE)
 for line in lines:
-  range_age(line)
+  age = range_age(line)
+  gender = which_gender(line)
+  rel = which_rel(line)
+  tup = [age[0],age[1],gender,rel,line]
+  writer.writerow(tup)
+g.close()
