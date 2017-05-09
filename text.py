@@ -101,8 +101,8 @@ def reverse(s):
 
 
 def which_gender(line):
-  female = r'母|娘|女|妻'
-  male = r'父|息子|男|夫|主人'
+  female = u'母|娘|女|妻'
+  male = u'父|息子|男|夫|主人'
   if re.findall(female, line):
     return 2
   elif re.findall(male, line):
@@ -111,19 +111,16 @@ def which_gender(line):
     return -1
 
 def which_rel(line):
-  rel = {1:"自分", 2:"妻|主人|夫", 3:"子|娘", 4:"父|母", 5:"祖", 6:"孫", 7:"義", 8:"恋|彼", 9:"知人|友"}
+  rel = {1:u"自分", 2:u"妻|主人|夫", 3:u"子|娘", 4:u"父|母", 5:u"祖", 6:u"孫", 7:u"義", 8:u"恋|彼", 9:u"知人|友"}
   for i in range(2,10):
     if re.findall(rel[i], line):
       return i
   return 1
 
 def get_grade(str):
-  number = u'[1-6]'
-  number2 = u'[１-６一二三四五六]'
+  number = u'[1-6１-６一二三四五六]'
   if re.findall(number, str):
     return str2int(re.findall(number, str)[0]) - 1
-  elif re.findall(number2, str):
-    return str2int(re.findall(number2, str)[0]) - 1
   else:
     return -1
 
@@ -141,43 +138,35 @@ def get_range_grade(str):
     return 0
 
 
+
 def get_number(str):
   return str.split(u'代')[0].split(u'歳')[0].split(u'才')[0]
 
 def range_age(line):
-  age1 = u'[0-9]+[歳才]?代'
-  age2 = u'[０-９]+[歳才]?代'
-  age3 = u'[一二三四五六七八九十〇]+[歳才]?代'
-  age4 = u'十[歳才]?'
-  age5 = u'[0-9]+[歳才]'
-  age6 = u'[０-９]+[歳才]'
-  age7 = u'[一二三四五六七八九十〇]+[歳才]'
-  age8 = u'十[歳才]'
+  age1 = u'[0-9０-９一二三四五六七八九十〇]+[歳才]?代'
+  age2 = u'[0-9０-９一二三四五六七八九十〇]+[歳才]'
   age_from = 0
   age_to = 0
   if re.findall(age1, line):
     age_from = str2int(get_number(re.findall(age1,line)[0]))
-    age_to = age_from + 9
+    former = u'前'
+    latter = u'後'
+    middle = u'半'
+    if re.findall(former, line):
+      print('前')
+      age_to = age_from + 4
+    elif re.findall(latter, line):
+      print('後')
+      age_from += 5
+      age_to = age_from + 4
+    elif re.findall(middle, line):
+      print('半')
+      age_from += 3
+      age_to = age_from + 5
+    else:
+      age_to = age_from + 9
   elif re.findall(age2, line):
     age_from = str2int(get_number(re.findall(age2,line)[0]))
-    age_to = age_from + 9
-  elif re.findall(age3, line):
-    age_from = str2int(get_number(re.findall(age3,line)[0]))
-    age_to = age_from + 9
-  elif re.findall(age4, line):
-    age_from = 10
-    age_to = age_from + 9
-  elif re.findall(age5, line):
-    age_from = str2int(get_number(re.findall(age5,line)[0]))
-    age_to = age_from
-  elif re.findall(age6, line):
-    age_from = str2int(get_number(re.findall(age6,line)[0]))
-    age_to = age_from
-  elif re.findall(age7, line):
-    age_from = str2int(get_number(re.findall(age7,line)[0]))
-    age_to = age_from
-  elif re.findall(age8, line):
-    age_from = 10
     age_to = age_from
   elif re.findall(u'高',line):
     age_from = 16
@@ -213,6 +202,17 @@ def range_age(line):
   elif re.findall(u'月',line):
     age_from = 0
     age_to = 1
+  elif re.findall(u'年[生]?', line):
+    if(re.findall(u'[1-6１-６一二三四五六]', line)):
+      grade = str2int(re.findall(u'[1-6１-６一二三四五六]', line)[0])
+      age_from = 6 + grade
+      age_to = age_from
+    else:
+      age_from = -1
+      age_to = -1
+  elif re.findall(u'成人', line):
+    age_from = 20
+    age_to = -1
   else:
     age_from = -1
     age_to = -1
