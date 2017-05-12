@@ -102,8 +102,8 @@ def reverse(s):
 
 
 def which_gender(line):
-  female = u'母|娘|女|妻'
-  male = u'父|息子|男|夫|主人'
+  female = u'母|娘|女|妻|妹|姉'
+  male = u'父|息子|男|夫|主人|弟|兄'
   if re.findall(female, line):
     return 2
   elif re.findall(male, line):
@@ -112,7 +112,7 @@ def which_gender(line):
     return -1
 
 def which_rel(line):
-  rel = {1:u"自分", 2:u"妻|主人|夫", 3:u"子|娘", 4:u"父|母", 5:u"祖", 6:u"孫", 7:u"義", 8:u"恋|彼", 9:u"知人|友"}
+  rel = {1:u"自分", 2:u"妻|主人|夫", 3:u"子|娘", 4:u"父|母", 5:u"祖", 6:u"孫", 7:u"義", 8:u"恋|彼", 9:u"知人|友", 10:u'兄|弟|姉|妹'}
   for i in range(2,10):
     if re.findall(rel[i], line):
       return i
