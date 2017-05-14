@@ -4,6 +4,8 @@ import csv   #csvモジュールをインポートする
 import re
 import unicodedata
 import pandas as pd
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
 
 
 def str2int(s
@@ -40,7 +42,7 @@ def str2int(s
                 #漢数字
                 , u'〇':0, u'一':1, u'二':2, u'三':3, u'四':4
                 , u'五':5, u'六':6, u'七':7, u'八':8, u'九':9
-                , u'〇':0, u'壱':1, u'弐':2, u'参':3
+                , u'〇':0, u'壱':1, u'弐':2, u'参':3, u'数':3
                 #日本の旧大字
                 , u'零':0, u'壹':1, u'貮':2, u'貳':2, u'參':3
                 , u'肆':4, u'伍':5, u'陸':6, u'柒':7, u'漆':7
@@ -156,16 +158,15 @@ def since_age(line):
       age += 3
   elif re.findall(u'幼稚園|保育園|幼|小さ',line):
     age = 4
-  elif re.findall(u'[かヶ]?月',line):
-    age = 0
-    age_to = 1
-  elif re.findall(u'[1-6１-６一二三四五六]年[生]?', line):
-    if(re.findall(u'[1-6１-６一二三四五六]', line)):
-      grade = str2int(re.findall(u'[1-6１-６一二三四五六]', line)[0])
-      age = 6 + grade
-    else:
-      age = -1
-      age_to = -1
+  #elif re.findall(u'[かヶ]?月',line):
+  #  age = 0
+
+  #elif re.findall(u'[1-6１-６一二三四五六]年[生]?', line):
+  #  if(re.findall(u'[1-6１-６一二三四五六]', line)):
+  #    grade = str2int(re.findall(u'[1-6１-６一二三四五六]', line)[0])
+  #    age = 6 + grade
+  #  else:
+  #    age = -1
   elif re.findall(u'少[年女]|子供|子ども|こども', line):
     age = 10
   elif re.findall(u'青年', line):
@@ -186,6 +187,39 @@ def since_age(line):
     age = -1
   return age
 
+def since_date(line):
+  term = u'([0-9０-９一二三四五六七八九十〇]*|数|半)+(週間|時間|日|[かヶ]?月|年)(間|.*(前|頃|ころ).*(から|より))|(今|去|昨|先)(晩|日|月|年).*(から|より)|[月週年]末'
+  date = datetime.now()
+  day = 0
+  hour = 0
+  week = 0
+  month = 0
+  year = 0
+  if re.findall(term,line):
+    text = re.search(term,line).group(0)
+    if(re.findall(u'([0-9０-９一二三四五六七八九十〇]*|数|半)+(週間|時間|日|[かヶ]?月|年)(間|.*(前|頃|ころ))', text)):
+      text = re.search(u'([0-9０-９一二三四五六七八九十〇]*|数|半)+(週間|時間|日|[かヶ]?月|年)(間|.*(前|頃|ころ))', text).group(0)
+      if(u'週間' in text):
+        week = str2int(re.search(u'([0-9０-９一二三四五六七八九十〇]*|数)週間', text).group(0).split(u'週間')[0])
+      if(u'年' in text):
+        year = str2int(re.search(u'([0-9０-９一二三四五六七八九十〇]*|数)年', text).group(0).split(u'年')[0])
+        #「2017年1月の終わり頃から」のように決め打ちされている場合はyear=2017になってしまう
+        if(year >= 2017):
+          year = 0
+      if(u'日' in text):
+        day = str2int(re.search(u'([0-9０-９一二三四五六七八九十〇]*|数)日', text).group(0).split(u'日')[0])
+      if(u'月' in text):
+        month = str2int(re.split(u'[かヶ]?月', re.search(u'([0-9０-９一二三四五六七八九十〇]*|数)[かヶ]?月', text).group(0))[0])
+      if(u'時間' in text):
+        hour = str2int(re.search(u'([0-9０-９一二三四五六七八九十〇]*|数)時間', text).group(0).split(u'時間')[0])
+  date -= relativedelta(days = day, weeks = week, months = month, years = year)
+  return date
+
+
+
+
 df = pd.read_csv("named_entity_report_csv_20170510_105557.csv")
 for key, value in df[df.label_type == "SINCE"].iterrows():
-  print(str(value['ne_text']) + str(since_age(str(value['ne_text']).decode('utf-8'))))
+  if(value['ne_text']==value['ne_text']):
+    text = str(value['ne_text']).decode('utf-8')
+    print(str(value['ne_text']) + str(since_date(text)))
