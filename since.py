@@ -230,26 +230,23 @@ def since_date(line):
     if re.findall(u'[0-9０-９]{1,2}月', line):
       set_month = str2int(re.search(u'[0-9０-９]{1,2}月', line).group(0).split(u'月')[0])
   #平成28年６月頃からみたいな表記
-  if u'前' not in line and re.findall(u'(H|h|S|s|平成|昭和)?([0-9０-９一二三四五六七八九十〇]+(時|日|月|年).*).*(|頃|ころ|ごろ)?.*(から|より)',line):
+  if (u'前' not in line or u'前半' in line) and re.findall(u'(H|h|S|s|平成|昭和)?([0-9０-９一二三四五六七八九十〇]+(時|日|月|年).*).*(|頃|ころ|ごろ)?.*(から|より)',line):
     not_ago_year = False
     text = re.search(u'(H|S|平成|昭和)?([0-9０-９一二三四五六七八九十〇]+(時|日|月|年).*).*(|頃|ころ|ごろ)?.*(から|より)',line).group(0)
     if u'高校' in line or u'中学' in line or u'小学' in line:
       not_ago_year = True
-    text = re.search(u'(H|S|平成|昭和)?(([0-9０-９一二三四五六七八九十〇]+(時|日|月|年).*))+', line).group(0)
     if(re.findall(u'([0-9０-９一二三四五六七八九十〇]+|数)時', text)):
       set_hour = str2int(re.search(u'[0-9０-９一二三四五六七八九十〇]+時', text).group(0).split(u'時')[0])
     if(re.findall(u'([0-9０-９一二三四五六七八九十〇]+|数)日', text)):
       set_day = str2int(re.search(u'[0-9０-９一二三四五六七八九十〇]+日', text).group(0).split(u'日')[0])
     if(re.findall(u'([0-9０-９一二三四五六七八九十〇]+|数)月', text)):
-      set_month = str2int(re.split(u'月', re.search(u'[0-9０-９一二三四五六七八九十〇]+月', text).group(0))[0])
+      set_month = str2int(re.search(u'[0-9０-９一二三四五六七八九十〇]+月', text).group(0).split(u'月')[0])
     if(re.findall(u'([0-9０-９一二三四五六七八九十〇]+|数)年', text) and not not_ago_year):
       set_year = str2int(re.search(u'[0-9０-９一二三四五六七八九十〇]+年', text).group(0).split(u'年')[0])
       if re.findall(u'(H|h|平成)', text):
-        ago_year = datetime.now().year - 1988 - set_year
-        set_year = 0
+        set_year = 1988 + set_year
       elif re.findall(u'(S|s|昭和)', text):
-        ago_year = datetime.now().year - 1925 - set_year
-        set_year = 0
+        set_year = 1925 + set_year
   #具体的なdateではなく、相対的な時間
   if re.findall(u'([0-9０-９一二三四五六七八九十〇]+|数|半|何)+(週間|時間|日|[かヶケヵカ]?月|年)(間|.*前.*(から|より))|こ[のこ].*([0-9０-９一二三四五六七八九十〇]+|数|半|何)+(週間|時間|日|[かヶケヵカ]?月|年)(間|.*(から|より))',line):
     text = re.search(u'([0-9０-９一二三四五六七八九十〇]+|数|半|何)+(週間|時間|日|[かヶケヵカ]?月|年)(間|.*前.*(から|より))|こ[のこ].*([0-9０-９一二三四五六七八九十〇]+|数|半|何)+(週間|時間|日|[かヶケヵカ]?月|年)(間|.*(から|より))',line).group(0)
@@ -303,18 +300,28 @@ def since_date(line):
     elif u'年' in text:
       ago_year = how_ago
 
-  if re.findall(u'(月|年).*(明け|始め|初め|はじめ|末|暮れ|終わり)', line) and not re.findall(u'[かヶケヵカ]月.*(明け|始め|初め|はじめ|末|暮れ|終わり)', line):
-    text = re.search(u'(月|年).*(明け|始め|初め|はじめ|末|暮れ|終わり)', line).group(0)
+  if re.findall(u'(月|年).*(上旬|前半|初旬|明け|始め|初め|はじめ|末|暮れ|終わり|下旬|後半|中旬|半ば)', line) and not re.findall(u'[かヶケヵカ]月.*(上旬|前半|初旬|明け|始め|初め|はじめ|末|暮れ|終わり|下旬|後半|中旬|半ば)', line):
+    text = re.search(u'(月|年).*(上旬|前半|初旬|明け|始め|初め|はじめ|末|暮れ|終わり|下旬|後半|中旬|半ば)', line).group(0)
     if u'月' in text:
-      if re.findall(u'(明け|始め|初め|はじめ)', line):
-        set_day = 1
-      else:
+      if re.findall(u'(上旬|前半|初旬|明け|始め|初め|はじめ)', line):
+        set_day = 5
+      elif(re.findall(u'(下旬|後半|末|暮れ|終わり)', text)):
         set_day = 25
+      elif(re.findall(u'月.*(中旬|半ば)', text)):
+        set_day = 15
     else:
       if re.findall(u'(明け|始め|初め|はじめ)', line):
         set_month = 1
-      else:
+      elif re.findall(u'前半', line):
+        set_month = 3
+      elif re.findall(u'半ば', line):
+        set_month = 6
+      elif re.findall(u'後半', line):
+        set_month = 9
+      elif(re.findall(u'(末|暮れ|終わり)', text)):
         set_month = 12
+
+
 
   if re.findall(u'月半', line) and u'半ば' not in line:
     ago_day = 15
