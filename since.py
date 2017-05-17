@@ -193,19 +193,26 @@ def since_age(line):
 
 
 
+def none2zero(arg):
+  if arg:
+    return arg
+  else:
+    return 0
+
 def since_date(line):
   base_date = datetime.now()
-  const_date = base_date
-  ago_hour = 0
-  ago_day = 0
-  ago_week = 0
-  ago_month = 0
-  ago_year = 0
-  set_hour = 0
-  set_day = 0
-  set_week = 0
-  set_month = 0
-  set_year = 0
+  is_since_date = False #since_dateに関する表記がある場合はTrue
+  ago_hour = None
+  ago_day = None
+  ago_week = None
+  ago_month = None
+  ago_year = None
+  set_hour = None
+  set_day = None
+  set_week = None
+  set_month = None
+  set_year = None
+  how_ago = None
   #具体的なdateが決まっているか
   #8/5みたいな表記
   if re.findall(u'[0-9０-９一二三四五六七八九十〇]+/[0-9０-９一二三四五六七八九十〇]+',line):
@@ -268,9 +275,8 @@ def since_date(line):
         ago_month = 6
       else:
         ago_year = str2int(tmp)
-  if re.findall(u'(今|去|昨|先)(晩|日|週|月|年).*(から|より)', line):
-    text = re.search(u'(今|去|昨|先)(晩|日|週|月|年).*(から|より)', line).group(0)
-    how_ago = 0
+  if re.findall(u'(今|去|昨|先|前)(日|週|月|年)', line):
+    text = re.search(u'(今|去|昨|先|前)(日|週|月|年)', line).group(0)
     if u'今' in text:
       how_ago = 0
     elif u'去' in text:
@@ -279,9 +285,9 @@ def since_date(line):
       how_ago = 1
     elif u'先' in text:
       how_ago = 1
+    elif u'前' in text:
+      how_ago = 1
 
-    if u'晩' in text:
-      ago_day = how_ago
     elif u'日' in text:
       ago_day = how_ago
     elif u'週' in text:
@@ -290,29 +296,56 @@ def since_date(line):
       ago_month = how_ago
     elif u'年' in text:
       ago_year = how_ago
+
+
+  if(u'朝' in line):
+    set_hour = 7
+  elif(u'昼' in line):
+    set_hour = 12
+  elif(u'日中' in line):
+    set_hour = 12
+  elif(u'夕' in line):
+    set_hour = 17
+  elif(u'晩' in line):
+    set_hour = 20
+  elif(u'深夜' in line):
+    set_hour = 0
+  elif(u'夜' in line):
+    set_hour = 20
+
   if(u'秋' in line):
     set_month = 10
-  if(u'冬' in line):
+  elif(u'冬' in line):
     set_month = 1
-  if(u'春' in line):
+  elif(u'春' in line):
     set_month = 4
-  if(u'夏' in line):
+  elif(u'夏' in line):
     set_month = 7
-  base_date -= relativedelta(days = ago_day, weeks = ago_week, months = ago_month, years = ago_year)
-  if set_hour > 0:
+
+
+  if ago_day is not None or ago_week is not None or ago_month is not None or ago_year is not None:
+    is_since_date = True
+    ago_day = none2zero(ago_day)
+    ago_week = none2zero(ago_week)
+    ago_month = none2zero(ago_month)
+    ago_year = none2zero(ago_year)
+    base_date -= relativedelta(days = ago_day, weeks = ago_week, months = ago_month, years = ago_year)
+  if set_hour:
     if set_hour >= 24:
       set_hour -= 24
     base_date = base_date.replace(hour = set_hour)
-  if set_year > 0:
+  if set_year:
     base_date = base_date.replace(year = set_year)
-  if set_month > 0:
+  if set_month:
     base_date = base_date.replace(month = set_month)
-  if set_day > 0 and set_day < 32:
+  if set_day and set_day < 32:
     base_date = base_date.replace(day = set_day)
-  if base_date == const_date:
-    return None
-  else:
+  if set_hour is not None or set_day is not None or set_week is not None or set_month is not None or set_year is not None:
+    is_since_date = True
+  if is_since_date:
     return base_date
+  else:
+    return None
 
 
 
