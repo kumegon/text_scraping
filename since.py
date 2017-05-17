@@ -200,6 +200,7 @@ def none2zero(arg):
     return 0
 
 def since_date(line):
+  yobi = {u"月":0, u"火":1 , u"水":2 , u"木":3, u"金":4, u"土":5, u"日":6}
   base_date = datetime.now()
   is_since_date = False #since_dateに関する表記がある場合はTrue
   ago_hour = None
@@ -354,6 +355,8 @@ def since_date(line):
   elif(u'正月' in line):
     set_month = 1
 
+  if u'曜日' in line:
+    ago_day = (base_date.weekday() - yobi[re.search(u'(.)曜日', line).group(1)]) % 7
 
   if ago_day is not None or ago_week is not None or ago_month is not None or ago_year is not None:
     is_since_date = True
@@ -388,7 +391,12 @@ df = pd.read_csv("named_entity_report_csv_20170510_105557.csv")
 for key, value in df[df.label_type == "SINCE"].iterrows():
   if(value['ne_text']==value['ne_text']):
     text = str(value['ne_text']).decode('utf-8')
-    result = [value['id'],since_age(text), since_date(text), value['ne_text']]
+    age = since_age(text)
+    date = since_date(text)
+    event = None
+    if not (age is not None or date is not None):
+      event = value['ne_text']
+    result = [value['id'], age, date, event, value['ne_text']]
     print(result)
     writer.writerow(result)
 g.close()
