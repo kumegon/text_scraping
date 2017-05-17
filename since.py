@@ -98,7 +98,7 @@ def reverse(s):
 
 
 def get_number(str):
-  return str.split(u'代')[0].split(u'歳')[0].split(u'才')[0]
+  return str.replace(u'代', u'').replace(u'歳', u'').replace(u'才', u'')
 
 def get_grade(str):
   number = u'[1-6１-６一二三四五六]'
@@ -200,8 +200,8 @@ def none2zero(arg):
     return 0
 
 def since_date(line):
+  base_date = datetime.now() #ここに相談日時を入れる
   yobi = {u"月":0, u"火":1 , u"水":2 , u"木":3, u"金":4, u"土":5, u"日":6}
-  base_date = datetime.now()
   is_since_date = False #since_dateに関する表記がある場合はTrue
   ago_hour = None
   ago_day = None
@@ -216,20 +216,17 @@ def since_date(line):
   how_ago = None
   #具体的なdateが決まっているか
   #8/5みたいな表記
-  if re.findall(u'[0-9０-９一二三四五六七八九十〇]+/[0-9０-９一二三四五六七八九十〇]+',line):
-    text = re.search(u'[0-9０-９一二三四五六七八九十〇]+/[0-9０-９一二三四五六七八九十〇]+',line).group(0).split('/')
+  text = re.search(u'[0-9０-９一二三四五六七八九十〇]+/[0-9０-９一二三四五六七八九十〇]+',line)
+  if text:
+    text = text.group(0).split('/')
     set_month = str2int(text[0])
     set_day = str2int(text[1])
   #16年10月みたいな表記
   if re.findall(u'([0-9０-９]{4}年)?([0-9０-９]{1,2}月)?' , line):
     if re.findall(u'[0-9０-９]{4}年', line):
-      set_year = str2int(re.search(u'[0-9０-９]{4}年', line).group(0).split(u'年')[0])
-      if set_year <= base_date.year - 2000:
-        set_year += 2000
-      elif set_year < 100:
-        set_year += 1900
+      set_year = str2int(re.search(u'[0-9０-９]{4}年', line).group(0).replace(u'年',u''))
     if re.findall(u'[0-9０-９]{1,2}月', line):
-      set_month = str2int(re.search(u'[0-9０-９]{1,2}月', line).group(0).split(u'月')[0])
+      set_month = str2int(re.search(u'[0-9０-９]{1,2}月', line).group(0).replace(u'月',u''))
   #平成28年６月頃からみたいな表記
   if (u'前' not in line or u'前半' in line) and re.findall(u'(H|h|S|s|平成|昭和)?([0-9０-９一二三四五六七八九十〇]+(時|日|月|年).*).*(|頃|ころ|ごろ)?.*(から|より)',line):
     not_ago_year = False
@@ -237,30 +234,30 @@ def since_date(line):
     if u'高校' in line or u'中学' in line or u'小学' in line:
       not_ago_year = True
     if(re.findall(u'([0-9０-９一二三四五六七八九十〇]+|数)時', text)):
-      set_hour = str2int(re.search(u'[0-9０-９一二三四五六七八九十〇]+時', text).group(0).split(u'時')[0])
+      set_hour = str2int(re.search(u'[0-9０-９一二三四五六七八九十〇]+時', text).group(0).replace(u'時',u''))
     if(re.findall(u'([0-9０-９一二三四五六七八九十〇]+|数)日', text)):
-      set_day = str2int(re.search(u'[0-9０-９一二三四五六七八九十〇]+日', text).group(0).split(u'日')[0])
+      set_day = str2int(re.search(u'[0-9０-９一二三四五六七八九十〇]+日', text).group(0).replace(u'日',u''))
     if(re.findall(u'([0-9０-９一二三四五六七八九十〇]+|数)月', text)):
-      set_month = str2int(re.search(u'[0-9０-９一二三四五六七八九十〇]+月', text).group(0).split(u'月')[0])
+      set_month = str2int(re.search(u'[0-9０-９一二三四五六七八九十〇]+月', text).group(0).replace(u'月',u''))
     if(re.findall(u'([0-9０-９一二三四五六七八九十〇]+|数)年', text) and not not_ago_year):
-      set_year = str2int(re.search(u'[0-9０-９一二三四五六七八九十〇]+年', text).group(0).split(u'年')[0])
+      set_year = str2int(re.search(u'[0-9０-９一二三四五六七八九十〇]+年', text).group(0).replace(u'年',u''))
       if re.findall(u'(H|h|平成)', text):
         set_year = 1988 + set_year
       elif re.findall(u'(S|s|昭和)', text):
         set_year = 1925 + set_year
   #具体的なdateではなく、相対的な時間
-  if re.findall(u'([0-9０-９一二三四五六七八九十〇]+|数|半|何)+(週間|時間|日|[かヶケヵカ]?月|年)(間|.*前.*(から|より))|こ[のこ].*([0-9０-９一二三四五六七八九十〇]+|数|半|何)+(週間|時間|日|[かヶケヵカ]?月|年)(間|.*(から|より))',line):
-    text = re.search(u'([0-9０-９一二三四五六七八九十〇]+|数|半|何)+(週間|時間|日|[かヶケヵカ]?月|年)(間|.*前.*(から|より))|こ[のこ].*([0-9０-９一二三四五六七八九十〇]+|数|半|何)+(週間|時間|日|[かヶケヵカ]?月|年)(間|.*(から|より))',line).group(0)
+  if re.findall(u'([0-9０-９一二三四五六七八九十〇]+|数|半|何)+(週間|時間|日|[かヶケヵカ]?月|年)(間|.*(まえ|前).*(から|より))|こ[のこ].*([0-9０-９一二三四五六七八九十〇]+|数|半|何)+(週間|時間|日|[かヶケヵカ]?月|年)(間|.*(から|より))',line):
+    text = re.search(u'([0-9０-９一二三四五六七八九十〇]+|数|半|何)+(週間|時間|日|[かヶケヵカ]?月|年)(間|.*(まえ|前).*(から|より))|こ[のこ].*([0-9０-９一二三四五六七八九十〇]+|数|半|何)+(週間|時間|日|[かヶケヵカ]?月|年)(間|.*(から|より))',line).group(0)
     if(re.findall(u'([0-9０-９一二三四五六七八九十〇]+|数)時間', text)):
-      ago_hour = str2int(re.search(u'([0-9０-９一二三四五六七八九十〇]+|数)時間', text).group(0).split(u'時間')[0])
+      ago_hour = str2int(re.search(u'([0-9０-９一二三四五六七八九十〇]+|数)時間', text).group(0).replace(u'時間',u''))
     if(re.findall(u'([0-9０-９一二三四五六七八九十〇]+|数|半|何)日', text)):
-      tmp = re.search(u'([0-9０-９一二三四五六七八九十〇]+|数|半|何)日', text).group(0).split(u'日')[0]
+      tmp = re.search(u'([0-9０-９一二三四五六七八九十〇]+|数|半|何)日', text).group(0).replace(u'日',u'')
       if u'半' in tmp:
         ago_hour = 12
       else:
         ago_day = str2int(tmp)
     if(re.findall(u'([0-9０-９一二三四五六七八九十〇]+|数)週間', text)):
-      ago_week = str2int(re.search(u'([0-9０-９一二三四五六七八九十〇]+|数)週間', text).group(0).split(u'週間')[0])
+      ago_week = str2int(re.search(u'([0-9０-９一二三四五六七八九十〇]+|数)週間', text).group(0).replace(u'週間',u''))
     if(re.findall(u'([0-9０-９一二三四五六七八九十〇]+|数|半|何)[かヶケヵカ]?月', text)):
       tmp = re.split(u'[かヶケヵカ]?月', re.search(u'([0-9０-９一二三四五六七八九十〇]+|数|半|何)[かヶケヵカ]?月', text).group(0))[0]
       if u'半'in tmp:
@@ -268,7 +265,7 @@ def since_date(line):
       else:
         ago_month = str2int(tmp)
     if(re.findall(u'([0-9０-９一二三四五六七八九十〇]+|数|半|何)年', text)):
-      tmp = tmp = re.search(u'([0-9０-９一二三四五六七八九十〇]+|数|半|何)年', text).group(0).split(u'年')[0]
+      tmp = tmp = re.search(u'([0-9０-９一二三四五六七八九十〇]+|数|半|何)年', text).group(0).replace(u'年',u'')
       if u'半' in tmp:
         ago_month = 6
       else:
@@ -370,6 +367,10 @@ def since_date(line):
       set_hour -= 24
     base_date = base_date.replace(hour = set_hour)
   if set_year:
+    if set_year <= base_date.year - 2000:
+      set_year += 2000
+    elif set_year < 100:
+      set_year += 1900
     base_date = base_date.replace(year = set_year)
   if set_month:
     base_date = base_date.replace(month = set_month)
@@ -395,8 +396,8 @@ for key, value in df[df.label_type == "SINCE"].iterrows():
     date = since_date(text)
     event = None
     if not (age is not None or date is not None):
-      event = value['ne_text']
-    result = [value['id'], age, date, event, value['ne_text']]
+      event = value['ne_text'].replace('\n', '')
+    result = [value['id'], age, date, event, value['ne_text'].replace('\n', '')]
     print(result)
     writer.writerow(result)
 g.close()
