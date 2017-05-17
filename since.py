@@ -162,9 +162,9 @@ def since_age(line):
       age += range_grade
     else:
       age += 3
-  elif re.findall(u'幼稚園|保育園|幼|小さ',line):
+  elif re.findall(u'幼稚園|保育園|幼|小さ|物心',line):
     age = 4
-  elif (re.findall(u'(生後)?.*[0-9０-９一二三四五六七八九十〇]+[かヶケヵカ]月',line) and u'前' not in line and u'産後' not in line) or u'生まれ' in line or u'産まれ' in line:
+  elif (re.findall(u'生後.*[0-9０-９一二三四五六七八九十〇]+[かヶケヵカ]月',line) and u'前' not in line) or (re.findall(u'[生産]まれ', line) and not re.findall(u'が.?[生産]まれ', line)):
     age = 0
 
   #elif re.findall(u'[1-6１-６一二三四五六]年[生]?', line):
@@ -173,7 +173,7 @@ def since_age(line):
   #    age = 6 + grade
   #  else:
   #    age = -1
-  elif re.findall(u'少[年女]|子供|子ども|こども', line):
+  elif re.findall(u'少[年女]|子供|子ども|こども', line) and not re.findall(u'(子供|子ども|こども)[がを]', line):
     age = 10
   elif re.findall(u'青年', line):
     age = 18
