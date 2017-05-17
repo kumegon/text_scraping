@@ -164,8 +164,8 @@ def since_age(line):
       age += 3
   elif re.findall(u'幼稚園|保育園|幼|小さ',line):
     age = 4
-  #elif re.findall(u'[かヶケヵ]?月',line):
-  #  age = 0
+  elif (re.findall(u'(生後)?.*[0-9０-９一二三四五六七八九十〇]+[かヶケヵカ]月',line) and u'前' not in line and u'産後' not in line) or u'生まれ' in line or u'産まれ' in line:
+    age = 0
 
   #elif re.findall(u'[1-6１-６一二三四五六]年[生]?', line):
   #  if(re.findall(u'[1-6１-６一二三四五六]', line)):
@@ -251,8 +251,8 @@ def since_date(line):
         ago_year = datetime.now().year - 1925 - set_year
         set_year = 0
   #具体的なdateではなく、相対的な時間
-  if re.findall(u'([0-9０-９一二三四五六七八九十〇]+|数|半|何)+(週間|時間|日|[かヶケヵ]?月|年)(間|.*前.*(から|より))|こ[のこ].*([0-9０-９一二三四五六七八九十〇]+|数|半|何)+(週間|時間|日|[かヶケヵ]?月|年)(間|.*(から|より))',line):
-    text = re.search(u'([0-9０-９一二三四五六七八九十〇]+|数|半|何)+(週間|時間|日|[かヶケヵ]?月|年)(間|.*前.*(から|より))|こ[のこ].*([0-9０-９一二三四五六七八九十〇]+|数|半|何)+(週間|時間|日|[かヶケヵ]?月|年)(間|.*(から|より))',line).group(0)
+  if re.findall(u'([0-9０-９一二三四五六七八九十〇]+|数|半|何)+(週間|時間|日|[かヶケヵカ]?月|年)(間|.*前.*(から|より))|こ[のこ].*([0-9０-９一二三四五六七八九十〇]+|数|半|何)+(週間|時間|日|[かヶケヵカ]?月|年)(間|.*(から|より))',line):
+    text = re.search(u'([0-9０-９一二三四五六七八九十〇]+|数|半|何)+(週間|時間|日|[かヶケヵカ]?月|年)(間|.*前.*(から|より))|こ[のこ].*([0-9０-９一二三四五六七八九十〇]+|数|半|何)+(週間|時間|日|[かヶケヵカ]?月|年)(間|.*(から|より))',line).group(0)
     if(re.findall(u'([0-9０-９一二三四五六七八九十〇]+|数)時間', text)):
       ago_hour = str2int(re.search(u'([0-9０-９一二三四五六七八九十〇]+|数)時間', text).group(0).split(u'時間')[0])
     if(re.findall(u'([0-9０-９一二三四五六七八九十〇]+|数|半|何)日', text)):
@@ -263,8 +263,8 @@ def since_date(line):
         ago_day = str2int(tmp)
     if(re.findall(u'([0-9０-９一二三四五六七八九十〇]+|数)週間', text)):
       ago_week = str2int(re.search(u'([0-9０-９一二三四五六七八九十〇]+|数)週間', text).group(0).split(u'週間')[0])
-    if(re.findall(u'([0-9０-９一二三四五六七八九十〇]+|数|半|何)[かヶケヵ]?月', text)):
-      tmp = re.split(u'[かヶケヵ]?月', re.search(u'([0-9０-９一二三四五六七八九十〇]+|数|半|何)[かヶケヵ]?月', text).group(0))[0]
+    if(re.findall(u'([0-9０-９一二三四五六七八九十〇]+|数|半|何)[かヶケヵカ]?月', text)):
+      tmp = re.split(u'[かヶケヵカ]?月', re.search(u'([0-9０-９一二三四五六七八九十〇]+|数|半|何)[かヶケヵカ]?月', text).group(0))[0]
       if u'半'in tmp:
         ago_day = 15
       else:
@@ -275,6 +275,7 @@ def since_date(line):
         ago_month = 6
       else:
         ago_year = str2int(tmp)
+
   if re.findall(u'(今|去|一昨々|一昨|昨|先|前)(日|週|月|年)', line):
     text = re.search(u'(今|去|一昨々|一昨|昨|先|前)(日|週|月|年)', line).group(0)
     if u'今' in text:
@@ -302,6 +303,24 @@ def since_date(line):
     elif u'年' in text:
       ago_year = how_ago
 
+  if re.findall(u'(月|年).*(明け|始め|初め|はじめ|末|暮れ|終わり)', line) and not re.findall(u'[かヶケヵカ]月.*(明け|始め|初め|はじめ|末|暮れ|終わり)', line):
+    text = re.search(u'(月|年).*(明け|始め|初め|はじめ|末|暮れ|終わり)', line).group(0)
+    if u'月' in text:
+      if re.findall(u'(明け|始め|初め|はじめ)', line):
+        set_day = 1
+      else:
+        set_day = 25
+    else:
+      if re.findall(u'(明け|始め|初め|はじめ)', line):
+        set_month = 1
+      else:
+        set_month = 12
+
+  if re.findall(u'月半', line) and u'半ば' not in line:
+    ago_day = 15
+  if re.findall(u'年半', line) and u'半ば' not in line:
+    ago_month = 6
+
   if(u'朝' in line):
     set_hour = 7
   elif(u'昼' in line):
@@ -325,6 +344,8 @@ def since_date(line):
     set_month = 4
   elif(u'夏' in line):
     set_month = 7
+  elif(u'正月' in line):
+    set_month = 1
 
 
   if ago_day is not None or ago_week is not None or ago_month is not None or ago_year is not None:
