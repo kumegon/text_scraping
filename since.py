@@ -7,8 +7,10 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
 
-#base_dateに登校時の時間を入れる
-
+#since_dateメソッド内のbase_dateに登校時の時間を入れる
+g = open('since.csv','wb')#出力先のcsv
+writer = csv.writer(g, lineterminator='\n')
+df = pd.read_csv("named_entity_report_csv_20170510_105557.csv")#入力csv
 
 def str2int(s
         , piriod='.'    #小数点:[u'.', u'・', u'٫', u'・']
@@ -199,6 +201,8 @@ def none2zero(arg):
   else:
     return 0
 
+
+
 def since_date(line):
   base_date = datetime.now() #ここに相談日時を入れる
   yobi = {u"月":0, u"火":1 , u"水":2 , u"木":3, u"金":4, u"土":5, u"日":6}
@@ -386,9 +390,7 @@ def since_date(line):
 
 
 
-g = open('since.csv','wb')
-writer = csv.writer(g, lineterminator='\n')
-df = pd.read_csv("named_entity_report_csv_20170510_105557.csv")
+
 for key, value in df[df.label_type == "SINCE"].iterrows():
   if(value['ne_text']==value['ne_text']):
     text = str(value['ne_text']).decode('utf-8')
