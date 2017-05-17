@@ -275,12 +275,17 @@ def since_date(line):
         ago_month = 6
       else:
         ago_year = str2int(tmp)
-  if re.findall(u'(今|去|昨|先|前)(日|週|月|年)', line):
-    text = re.search(u'(今|去|昨|先|前)(日|週|月|年)', line).group(0)
+  if re.findall(u'(今|去|一昨々|一昨|昨|先|前)(日|週|月|年)', line):
+    text = re.search(u'(今|去|一昨々|一昨|昨|先|前)(日|週|月|年)', line).group(0)
     if u'今' in text:
       how_ago = 0
     elif u'去' in text:
       how_ago = 1
+    elif u'一昨々' in text:
+      how_ago = 3
+    elif u'一昨' in text:
+      how_ago = 2
+      print(123123123)
     elif u'昨' in text:
       how_ago = 1
     elif u'先' in text:
@@ -288,7 +293,7 @@ def since_date(line):
     elif u'前' in text:
       how_ago = 1
 
-    elif u'日' in text:
+    if u'日' in text:
       ago_day = how_ago
     elif u'週' in text:
       ago_day = how_ago * 7
@@ -296,7 +301,6 @@ def since_date(line):
       ago_month = how_ago
     elif u'年' in text:
       ago_year = how_ago
-
 
   if(u'朝' in line):
     set_hour = 7
