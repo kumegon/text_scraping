@@ -170,7 +170,7 @@ def none2zero(arg):
 
 
 def since_date(line):
-  base_date = datetime.datetime(2017, 5, 19, 8, 15, 15, 945411) #ここに相談日時を入れる
+  base_date = datetime(2017, 5, 19, 8, 15, 15, 945411) #ここに相談日時を入れる
   yobi = {u"月":0, u"火":1 , u"水":2 , u"木":3, u"金":4, u"土":5, u"日":6}
   is_since_date = False #since_dateに関する表記がある場合はTrue
   ago_hour = None
@@ -269,26 +269,24 @@ def since_date(line):
     elif u'年' in text:
       ago_year = how_ago
 
-  if re.findall(u'(月|年).*(上旬|前半|初旬|明け|始め|初め|はじめ|末|暮れ|終わり|下旬|後半|中旬|半ば)', line) and not re.findall(u'[かヶケヵカ]月.*(上旬|前半|初旬|明け|始め|初め|はじめ|末|暮れ|終わり|下旬|後半|中旬|半ば)', line):
-    text = re.search(u'(月|年).*(上旬|前半|初旬|明け|始め|初め|はじめ|末|暮れ|終わり|下旬|後半|中旬|半ば)', line).group(0)
-    if u'月' in text:
-      if re.findall(u'(上旬|前半|初旬|明け|始め|初め|はじめ)', line):
-        set_day = 5
-      elif(re.findall(u'(下旬|後半|末|暮れ|終わり)', text)):
-        set_day = 25
-      elif(re.findall(u'月.*(中旬|半ば)', text)):
-        set_day = 15
-    else:
-      if re.findall(u'(明け|始め|初め|はじめ)', line):
-        set_month = 1
-      elif re.findall(u'前半', line):
-        set_month = 3
-      elif re.findall(u'半ば', line):
-        set_month = 6
-      elif re.findall(u'後半', line):
-        set_month = 9
-      elif(re.findall(u'(末|暮れ|終わり)', text)):
-        set_month = 12
+  if re.findall(u'月.*(上旬|前半|初旬|明け|始め|初め|はじめ|末|暮れ|終わり|下旬|後半|中旬|半ば)', line) and not re.findall(u'[かヶケヵカ]月.*(上旬|前半|初旬|明け|始め|初め|はじめ|末|暮れ|終わり|下旬|後半|中旬|半ば)', line):
+    if re.findall(u'(上旬|前半|初旬|明け|始め|初め|はじめ)', line):
+      set_day = 5
+    elif(re.findall(u'(下旬|後半|末|暮れ|終わり)', line)):
+      set_day = 25
+    elif(re.findall(u'月.*(中旬|半ば)', line)):
+      set_day = 15
+  elif re.findall(u'年.*(上旬|前半|初旬|明け|始め|初め|はじめ|末|暮れ|終わり|下旬|後半|中旬|半ば)', line):
+    if re.findall(u'(明け|始め|初め|はじめ)', line):
+      set_month = 1
+    elif re.findall(u'前半', line):
+      set_month = 3
+    elif re.findall(u'半ば', line):
+      set_month = 6
+    elif re.findall(u'後半', line):
+      set_month = 9
+    elif(re.findall(u'(末|暮れ|終わり)', line)):
+      set_month = 12
 
 
 
