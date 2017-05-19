@@ -170,7 +170,7 @@ def none2zero(arg):
 
 
 def since_date(line):
-  base_date = datetime.now() #ここに相談日時を入れる
+  base_date = datetime.datetime(2017, 5, 19, 8, 15, 15, 945411) #ここに相談日時を入れる
   yobi = {u"月":0, u"火":1 , u"水":2 , u"木":3, u"金":4, u"土":5, u"日":6}
   is_since_date = False #since_dateに関する表記がある場合はTrue
   ago_hour = None
@@ -186,15 +186,16 @@ def since_date(line):
   how_ago = None
   #具体的なdateが決まっているか
   #8/5みたいな表記
-  text = re.search(u'[0-9０-９一二三四五六七八九十〇]+/[0-9０-９一二三四五六七八九十〇]+',line)
-  if text:
-    text = text.group(0).split('/')
+  slash = u'[0-9０-９一二三四五六七八九十〇]+/[0-9０-９一二三四五六七八九十〇]+'
+  text = re.search(slash,line)
+  if re.search(slash,line):
+    text = re.search(slash,line).group(0).split('/')
     set_month = str2int(text[0])
     set_day = str2int(text[1])
   #16年10月みたいな表記
-  if re.findall(u'([0-9０-９]{4}年)?([0-9０-９]{1,2}月)?' , line):
-    if re.findall(u'[0-9０-９]{4}年', line):
-      set_year = str2int(re.search(u'[0-9０-９]{4}年', line).group(0).replace(u'年',u''))
+  if re.findall(u'([0-9０-９]{2,4}年)?([0-9０-９]{1,2}月)?' , line):
+    if re.findall(u'[0-9０-９]{2,4}年', line):
+      set_year = str2int(re.search(u'[0-9０-９]{2,4}年', line).group(0).replace(u'年',u''))
     if re.findall(u'[0-9０-９]{1,2}月', line):
       set_month = str2int(re.search(u'[0-9０-９]{1,2}月', line).group(0).replace(u'月',u''))
   #平成28年６月頃からみたいな表記
