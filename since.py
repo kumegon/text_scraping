@@ -199,6 +199,44 @@ def since_date(line):
     if re.findall(u'[0-9０-９]{1,2}月', line):
       set_month = str2int(re.search(u'[0-9０-９]{1,2}月', line).group(0).replace(u'月',u''))
   #平成28年６月頃からみたいな表記
+
+
+
+  if u'年' in line:
+    ago = u'(H|h|S|s|平成|昭和)?(?P<number>[0-9０-９一二三四五六七八九十〇]+|数|何)+年(間|.*(まえ|前).*(から|より))'
+    ago2 = u'こ[のこ].*(?P<number>[0-9０-９一二三四五六七八九十〇]+|数|何)+年(間|.*(から|より))'
+    since_time = u'(H|h|S|s|平成|昭和)?(?P<number>[0-9０-９一二三四五六七八九十〇]+)年.*(頃|ころ|ごろ)?.*(から|より)'
+    if re.search(ago,line):
+      text = re.search(ago,line)
+      ago_year = str2int(text.group('number'))
+    elif re.search(ago2,line):
+      text = re.search(ago2,line)
+      ago_year = str2int(text.group('number'))
+    elif re.search(since_time, line) and not(u'高校' in line or u'中学' in line or u'小学' in line):
+      text = re.search(since_time, line)
+      set_year = str2int(text.group('number'))
+      if re.findall(u'(H|h|平成)', text.group(0)):
+        set_year = 1988 + set_year
+      elif re.findall(u'(S|s|昭和)', text.group(0)):
+        set_year = 1925 + set_year
+    elif re.findall(u'(今|去|一昨々|一昨|昨|先|前)年', line):
+      text = re.search(u'(今|去|一昨々|一昨|昨|先|前)年', line).group(0)
+      if u'今' in text:
+        ago_year = 0
+      elif u'去' in text:
+        ago_year = 1
+      elif u'一昨々' in text:
+        ago_year = 3
+      elif u'一昨' in text:
+        ago_year = 2
+      elif u'昨' in text:
+        ago_year = 1
+      elif u'先' in text:
+        ago_year = 1
+      elif u'前' in text:
+        ago_year = 1
+
+
   if (u'前' not in line or u'前半' in line) and re.findall(u'(H|h|S|s|平成|昭和)?([0-9０-９一二三四五六七八九十〇]+(時|日|月|年).*).*(|頃|ころ|ごろ)?.*(から|より)',line):
     not_ago_year = False
     text = re.search(u'(H|S|平成|昭和)?([0-9０-９一二三四五六七八九十〇]+(時|日|月|年).*).*(|頃|ころ|ごろ)?.*(から|より)',line).group(0)
@@ -323,6 +361,9 @@ def since_date(line):
 
   if u'曜日' in line:
     ago_day = (base_date.weekday() - yobi[re.search(u'(.)曜日', line).group(1)]) % 7
+
+
+
 
   if ago_day is not None or ago_week is not None or ago_month is not None or ago_year is not None:
     is_since_date = True
