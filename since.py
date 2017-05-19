@@ -79,14 +79,11 @@ def get_grade(str):
     return -1
 
 def get_range_grade(str):
-  low = u'低'
-  middle = u'中'
-  high = u'高'
-  if re.findall(low, str):
+  if re.findall(u'低', str):
     return 2
-  elif re.findall(middle, str):
+  elif re.findall(u'中', str):
     return 4
-  elif re.findall(high, str):
+  elif re.findall(u'高', str):
     return 6
   else:
     return 0
@@ -94,39 +91,39 @@ def get_range_grade(str):
 
 def since_age(line):
   age = None
+  h_school = u'高([校]|[1-3１-３一二三])'
+  j_h_school = u'中([学]|[1-3１-３一二三])'
+  e_scool = u'小([学]|[1-6１-６一二三四五六])'
   if re.findall(u'[0-9０-９一二三四五六七八九十〇]+[歳才]?代', line):
     age = str2int(get_number(re.findall(u'[0-9０-９一二三四五六七八九十〇]+[歳才]?代',line)[0]))
-    former = u'前'
-    latter = u'後'
-    middle = u'半'
-    if re.findall(former, line):
+    if re.findall(u'前', line):
       age += 3
-    elif re.findall(latter, line):
+    elif re.findall(u'後', line):
       age += 8
-    elif re.findall(middle, line):
+    elif re.findall(u'半', line):
       age += 5
     else:
       age += 5
   elif re.findall(u'[0-9０-９一二三四五六七八九十〇]+[歳才]', line):
     age = str2int(get_number(re.findall(u'[0-9０-９一二三四五六七八九十〇]+[歳才]',line)[0]))
-  elif re.findall(u'高[校]?[1-3１-３一二三]?',line):
+  elif re.search(h_school,line):
     age = 16
-    grade = get_grade(line)
+    grade = get_grade(re.search(h_school,line).group(0))
     if grade >= 0:
       age += grade
     else:
       age += 1
-  elif re.findall(u'中[学]?[1-3１-３一二三]?',line):
+  elif re.search(j_h_school,line):
     age = 13
-    grade = get_grade(line)
+    grade = get_grade(re.search(j_h_school,line).group(0))
     if grade >= 0:
       age += grade
     else:
       age += 1
-  elif re.findall(u'小[学]?[1-6１-６一二三四五六]?',line):
+  elif re.search(e_scool,line):
     age = 7
-    grade = get_grade(line)
-    range_grade = get_range_grade(line)
+    grade = get_grade(re.search(e_scool,line).group(0))
+    range_grade = get_range_grade(re.search(e_scool,line).group(0))
     if grade >= 0:
       age += grade
     elif range_grade > 0:
@@ -135,7 +132,7 @@ def since_age(line):
       age += 3
   elif re.findall(u'幼稚園|保育園|幼|小さ|物心',line):
     age = 4
-  elif (re.findall(u'生後.*[0-9０-９一二三四五六七八九十〇]+[かヶケヵカ]月',line) and u'前' not in line) or (re.findall(u'[生産]まれ', line) and not re.findall(u'が.?[生産]まれ', line)):
+  elif re.findall(u'生後.*[0-9０-９一二三四五六七八九十〇]+[かヶケヵカ]月',line) or (re.findall(u'[生産]まれ', line) and not re.findall(u'が.?[生産]まれ', line)):
     age = 0
 
   #elif re.findall(u'[1-6１-６一二三四五六]年[生]?', line):
