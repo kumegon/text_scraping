@@ -235,7 +235,7 @@ def since_date(line):
     ago = u'(?P<number>[0-9０-９一二三四五六七八九十〇]+|数|何)+日(間|.*(まえ|前).*(から|より))'
     ago2 = u'こ[のこ].*(?P<number>[0-9０-９一二三四五六七八九十〇]+|数|何)+日(間|.*(から|より))'
     since_time = u'(?P<number>[0-9０-９一二三四五六七八九十〇]+)日.*(頃|ころ|ごろ)?.*(から|より)'
-    if u'半日' in line and ago_hour is not None and set_hour is not None:
+    if u'半日' in line and ago_hour is None and set_hour is None:
       ago_hour = 12
     if re.search(ago,line):
       text = re.search(ago,line)
@@ -311,7 +311,7 @@ def since_date(line):
     ago2 = u'こ[のこ].*(?P<number>[0-9０-９一二三四五六七八九十〇]+|数|何)+月(間|.*(から|より))'
     since_time = u'(?P<number>[0-9０-９一二三四五六七八九十〇]+)月.*(頃|ころ|ごろ)?.*(から|より)'
     since_time2 = u'[?P<number>0-9０-９一二三四五六七八九十〇]{1,2}月'
-    if u'半月' in line and ago_day is not None and set_day is not None:
+    if u'半月' in line and ago_day is None and set_day is None:
       ago_day = 15
     if re.search(ago,line):
       text = re.search(ago,line)
@@ -348,7 +348,7 @@ def since_date(line):
     ago2 = u'こ[のこ].*(?P<number>[0-9０-９一二三四五六七八九十〇]+|数|何)+年(間|.*(から|より))'
     since_time = u'(H|h|S|s|平成|昭和)?(?P<number>[0-9０-９一二三四五六七八九十〇]+)年.*(頃|ころ|ごろ)?.*(から|より)'
     since_time2 = u'[?P<number>0-9０-９一二三四五六七八九十〇]{2,4}年'
-    if u'半年' in line and ago_month is not None and set_month is not None:
+    if u'半年' in line and ago_month is None and set_month is None:
       ago_month = 6
     if re.search(ago,line):
       text = re.search(ago,line)
