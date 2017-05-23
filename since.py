@@ -184,7 +184,6 @@ def since_date(line):
   set_month = None
   set_year = None
   how_ago = None
-  #具体的なdateが決まっているか
   #8/5みたいな表記
   slash = u'[0-9０-９一二三四五六七八九十〇]+/[0-9０-９一二三四五六七八九十〇]+'
   text = re.search(slash,line)
@@ -192,20 +191,165 @@ def since_date(line):
     text = re.search(slash,line).group(0).split('/')
     set_month = str2int(text[0])
     set_day = str2int(text[1])
-  #16年10月みたいな表記
-  if re.findall(u'([0-9０-９]{2,4}年)?([0-9０-９]{1,2}月)?' , line):
-    if re.findall(u'[0-9０-９]{2,4}年', line):
-      set_year = str2int(re.search(u'[0-9０-９]{2,4}年', line).group(0).replace(u'年',u''))
-    if re.findall(u'[0-9０-９]{1,2}月', line):
-      set_month = str2int(re.search(u'[0-9０-９]{1,2}月', line).group(0).replace(u'月',u''))
-  #平成28年６月頃からみたいな表記
 
+
+
+
+  if(u'朝' in line):
+    set_hour = 7
+  elif(u'昼' in line):
+    set_hour = 12
+  elif(u'日中' in line):
+    set_hour = 12
+  elif(u'夕' in line):
+    set_hour = 17
+  elif(u'晩' in line):
+    set_hour = 20
+  elif(u'深夜' in line):
+    set_hour = 0
+  elif(u'夜' in line):
+    set_hour = 20
+
+  if u'時' in line:
+    ago = u'(?P<number>[0-9０-９一二三四五六七八九十〇]+|数|何)+時(間|.*(まえ|前).*(から|より))'
+    ago2 = u'こ[のこ].*(?P<number>[0-9０-９一二三四五六七八九十〇]+|数|何)+時(間|.*(から|より))'
+    since_time = u'(?P<number>[0-9０-９一二三四五六七八九十〇]+)時.*(頃|ころ|ごろ)?.*(から|より)'
+    if re.search(ago,line):
+      text = re.search(ago,line)
+      set_hour = str2int(text.group('number'))
+    elif re.search(ago2,line):
+      text = re.search(ago2,line)
+      set_hour = str2int(text.group('number'))
+    elif re.search(since_time, line):
+      text = re.search(since_time, line)
+      set_hour = str2int(text.group('number'))
+
+
+
+  if re.findall(u'月半', line) and u'半ば' not in line:
+    ago_day = 15
+  if u'曜日' in line:
+    ago_day = (base_date.weekday() - yobi[re.search(u'(.)曜日', line).group(1)]) % 7
+
+  if u'日' in line:
+    ago = u'(?P<number>[0-9０-９一二三四五六七八九十〇]+|数|何)+日(間|.*(まえ|前).*(から|より))'
+    ago2 = u'こ[のこ].*(?P<number>[0-9０-９一二三四五六七八九十〇]+|数|何)+日(間|.*(から|より))'
+    since_time = u'(?P<number>[0-9０-９一二三四五六七八九十〇]+)日.*(頃|ころ|ごろ)?.*(から|より)'
+    if u'半日' in line and ago_hour is not None and set_hour is not None:
+      ago_hour = 12
+    if re.search(ago,line):
+      text = re.search(ago,line)
+      ago_day = str2int(text.group('number'))
+    elif re.search(ago2,line):
+      text = re.search(ago2,line)
+      ago_day = str2int(text.group('number'))
+    elif re.search(since_time, line):
+      text = re.search(since_time, line)
+      set_day = str2int(text.group('number'))
+    elif re.findall(u'(今|去|一昨々|一昨|昨|先|前)日', line):
+      text = re.search(u'(今|去|一昨々|一昨|昨|先|前)日', line).group(0)
+      if u'今' in text:
+        ago_day = 0
+      elif u'去' in text:
+        ago_day = 1
+      elif u'一昨々' in text:
+        ago_day = 3
+      elif u'一昨' in text:
+        ago_day = 2
+      elif u'昨' in text:
+        ago_day = 1
+      elif u'先' in text:
+        ago_day = 1
+      elif u'前' in text:
+        ago_day = 1
+
+
+
+  if u'週' in line:
+    ago = u'(?P<number>[0-9０-９一二三四五六七八九十〇]+|数|何)+週間(間|.*(まえ|前).*(から|より))'
+    ago2 = u'こ[のこ].*(?P<number>[0-9０-９一二三四五六七八九十〇]+|数|何)+週間(間|.*(から|より))'
+    if re.search(ago,line):
+      text = re.search(ago,line)
+      ago_week = str2int(text.group('number'))
+    elif re.search(ago2,line):
+      text = re.search(ago2,line)
+      ago_week = str2int(text.group('number'))
+    elif re.findall(u'(今|去|一昨々|一昨|昨|先|前)週', line):
+      text = re.search(u'(今|去|一昨々|一昨|昨|先|前)週', line).group(0)
+      if u'今' in text:
+        ago_week = 0
+      elif u'去' in text:
+        ago_week = 1
+      elif u'一昨々' in text:
+        ago_week = 3
+      elif u'一昨' in text:
+        ago_week = 2
+      elif u'昨' in text:
+        ago_week = 1
+      elif u'先' in text:
+        ago_week = 1
+      elif u'前' in text:
+        ago_week = 1
+
+
+
+  if(u'秋' in line):
+    set_month = 10
+  elif(u'冬' in line):
+    set_month = 1
+  elif(u'春' in line):
+    set_month = 4
+  elif(u'夏' in line):
+    set_month = 7
+  elif(u'正月' in line):
+    set_month = 1
+  elif re.findall(u'年半', line) and u'半ば' not in line:
+    ago_month = 6
+
+  if u'月' in line:
+    ago = u'(?P<number>[0-9０-９一二三四五六七八九十〇]+|数|何)+[かヶケヵカ]?月(間|.*(まえ|前).*(から|より))'
+    ago2 = u'こ[のこ].*(?P<number>[0-9０-９一二三四五六七八九十〇]+|数|何)+月(間|.*(から|より))'
+    since_time = u'(?P<number>[0-9０-９一二三四五六七八九十〇]+)月.*(頃|ころ|ごろ)?.*(から|より)'
+    since_time2 = u'[?P<number>0-9０-９一二三四五六七八九十〇]{1,2}月'
+    if u'半月' in line and ago_day is not None and set_day is not None:
+      ago_day = 15
+    if re.search(ago,line):
+      text = re.search(ago,line)
+      ago_month = str2int(text.group('number'))
+    elif re.search(ago2,line):
+      text = re.search(ago2,line)
+      ago_month = str2int(text.group('number'))
+    elif re.search(since_time, line):
+      text = re.search(since_time, line)
+      set_month = str2int(text.group('number'))
+    elif re.findall(u'(今|去|一昨々|一昨|昨|先|前)月', line):
+      text = re.search(u'(今|去|一昨々|一昨|昨|先|前)月', line).group(0)
+      if u'今' in text:
+        ago_month = 0
+      elif u'去' in text:
+        ago_month = 1
+      elif u'一昨々' in text:
+        ago_month = 3
+      elif u'一昨' in text:
+        ago_month = 2
+      elif u'昨' in text:
+        ago_month = 1
+      elif u'先' in text:
+        ago_month = 1
+      elif u'前' in text:
+        ago_month = 1
+      elif re.findall(since_time2, line):
+        text = re.search(since_time2,line)
+        set_month = str2int(text.group('number'))
 
 
   if u'年' in line:
     ago = u'(H|h|S|s|平成|昭和)?(?P<number>[0-9０-９一二三四五六七八九十〇]+|数|何)+年(間|.*(まえ|前).*(から|より))'
     ago2 = u'こ[のこ].*(?P<number>[0-9０-９一二三四五六七八九十〇]+|数|何)+年(間|.*(から|より))'
     since_time = u'(H|h|S|s|平成|昭和)?(?P<number>[0-9０-９一二三四五六七八九十〇]+)年.*(頃|ころ|ごろ)?.*(から|より)'
+    since_time2 = u'[?P<number>0-9０-９一二三四五六七八九十〇]{2,4}年'
+    if u'半年' in line and ago_month is not None and set_month is not None:
+      ago_month = 6
     if re.search(ago,line):
       text = re.search(ago,line)
       ago_year = str2int(text.group('number'))
@@ -235,77 +379,10 @@ def since_date(line):
         ago_year = 1
       elif u'前' in text:
         ago_year = 1
+      elif re.findall(since_time2, line):
+        text = re.search(since_time2,line)
+        set_year = str2int(text.group('number'))
 
-
-  if (u'前' not in line or u'前半' in line) and re.findall(u'(H|h|S|s|平成|昭和)?([0-9０-９一二三四五六七八九十〇]+(時|日|月|年).*).*(|頃|ころ|ごろ)?.*(から|より)',line):
-    not_ago_year = False
-    text = re.search(u'(H|S|平成|昭和)?([0-9０-９一二三四五六七八九十〇]+(時|日|月|年).*).*(|頃|ころ|ごろ)?.*(から|より)',line).group(0)
-    if u'高校' in line or u'中学' in line or u'小学' in line:
-      not_ago_year = True
-    if(re.findall(u'([0-9０-９一二三四五六七八九十〇]+|数)時', text)):
-      set_hour = str2int(re.search(u'[0-9０-９一二三四五六七八九十〇]+時', text).group(0).replace(u'時',u''))
-    if(re.findall(u'([0-9０-９一二三四五六七八九十〇]+|数)日', text)):
-      set_day = str2int(re.search(u'[0-9０-９一二三四五六七八九十〇]+日', text).group(0).replace(u'日',u''))
-    if(re.findall(u'([0-9０-９一二三四五六七八九十〇]+|数)月', text)):
-      set_month = str2int(re.search(u'[0-9０-９一二三四五六七八九十〇]+月', text).group(0).replace(u'月',u''))
-    if(re.findall(u'([0-9０-９一二三四五六七八九十〇]+|数)年', text) and not not_ago_year):
-      set_year = str2int(re.search(u'[0-9０-９一二三四五六七八九十〇]+年', text).group(0).replace(u'年',u''))
-      if re.findall(u'(H|h|平成)', text):
-        set_year = 1988 + set_year
-      elif re.findall(u'(S|s|昭和)', text):
-        set_year = 1925 + set_year
-  #具体的なdateではなく、相対的な時間
-  if re.findall(u'([0-9０-９一二三四五六七八九十〇]+|数|半|何)+(週間|時間|日|[かヶケヵカ]?月|年)(間|.*(まえ|前).*(から|より))|こ[のこ].*([0-9０-９一二三四五六七八九十〇]+|数|半|何)+(週間|時間|日|[かヶケヵカ]?月|年)(間|.*(から|より))',line):
-    text = re.search(u'([0-9０-９一二三四五六七八九十〇]+|数|半|何)+(週間|時間|日|[かヶケヵカ]?月|年)(間|.*(まえ|前).*(から|より))|こ[のこ].*([0-9０-９一二三四五六七八九十〇]+|数|半|何)+(週間|時間|日|[かヶケヵカ]?月|年)(間|.*(から|より))',line).group(0)
-    if(re.findall(u'([0-9０-９一二三四五六七八九十〇]+|数)時間', text)):
-      ago_hour = str2int(re.search(u'([0-9０-９一二三四五六七八九十〇]+|数)時間', text).group(0).replace(u'時間',u''))
-    if(re.findall(u'([0-9０-９一二三四五六七八九十〇]+|数|半|何)日', text)):
-      tmp = re.search(u'([0-9０-９一二三四五六七八九十〇]+|数|半|何)日', text).group(0).replace(u'日',u'')
-      if u'半' in tmp:
-        ago_hour = 12
-      else:
-        ago_day = str2int(tmp)
-    if(re.findall(u'([0-9０-９一二三四五六七八九十〇]+|数)週間', text)):
-      ago_week = str2int(re.search(u'([0-9０-９一二三四五六七八九十〇]+|数)週間', text).group(0).replace(u'週間',u''))
-    if(re.findall(u'([0-9０-９一二三四五六七八九十〇]+|数|半|何)[かヶケヵカ]?月', text)):
-      tmp = re.split(u'[かヶケヵカ]?月', re.search(u'([0-9０-９一二三四五六七八九十〇]+|数|半|何)[かヶケヵカ]?月', text).group(0))[0]
-      if u'半'in tmp:
-        ago_day = 15
-      else:
-        ago_month = str2int(tmp)
-    if(re.findall(u'([0-9０-９一二三四五六七八九十〇]+|数|半|何)年', text)):
-      tmp = tmp = re.search(u'([0-9０-９一二三四五六七八九十〇]+|数|半|何)年', text).group(0).replace(u'年',u'')
-      if u'半' in tmp:
-        ago_month = 6
-      else:
-        ago_year = str2int(tmp)
-
-  if re.findall(u'(今|去|一昨々|一昨|昨|先|前)(日|週|月|年)', line):
-    text = re.search(u'(今|去|一昨々|一昨|昨|先|前)(日|週|月|年)', line).group(0)
-    if u'今' in text:
-      how_ago = 0
-    elif u'去' in text:
-      how_ago = 1
-    elif u'一昨々' in text:
-      how_ago = 3
-    elif u'一昨' in text:
-      how_ago = 2
-      print(123123123)
-    elif u'昨' in text:
-      how_ago = 1
-    elif u'先' in text:
-      how_ago = 1
-    elif u'前' in text:
-      how_ago = 1
-
-    if u'日' in text:
-      ago_day = how_ago
-    elif u'週' in text:
-      ago_day = how_ago * 7
-    elif u'月' in text:
-      ago_month = how_ago
-    elif u'年' in text:
-      ago_year = how_ago
 
   if re.findall(u'月.*(上旬|前半|初旬|明け|始め|初め|はじめ|末|暮れ|終わり|下旬|後半|中旬|半ば)', line) and not re.findall(u'[かヶケヵカ]月.*(上旬|前半|初旬|明け|始め|初め|はじめ|末|暮れ|終わり|下旬|後半|中旬|半ば)', line):
     if re.findall(u'(上旬|前半|初旬|明け|始め|初め|はじめ)', line):
@@ -325,44 +402,6 @@ def since_date(line):
       set_month = 9
     elif(re.findall(u'(末|暮れ|終わり)', line)):
       set_month = 12
-
-
-
-  if re.findall(u'月半', line) and u'半ば' not in line:
-    ago_day = 15
-  if re.findall(u'年半', line) and u'半ば' not in line:
-    ago_month = 6
-
-  if(u'朝' in line):
-    set_hour = 7
-  elif(u'昼' in line):
-    set_hour = 12
-  elif(u'日中' in line):
-    set_hour = 12
-  elif(u'夕' in line):
-    set_hour = 17
-  elif(u'晩' in line):
-    set_hour = 20
-  elif(u'深夜' in line):
-    set_hour = 0
-  elif(u'夜' in line):
-    set_hour = 20
-
-  if(u'秋' in line):
-    set_month = 10
-  elif(u'冬' in line):
-    set_month = 1
-  elif(u'春' in line):
-    set_month = 4
-  elif(u'夏' in line):
-    set_month = 7
-  elif(u'正月' in line):
-    set_month = 1
-
-  if u'曜日' in line:
-    ago_day = (base_date.weekday() - yobi[re.search(u'(.)曜日', line).group(1)]) % 7
-
-
 
 
   if ago_day is not None or ago_week is not None or ago_month is not None or ago_year is not None:
